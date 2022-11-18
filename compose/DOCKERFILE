@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: compose/app/DOCKERFILE
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file: example.env
+    depends_on:
+      - db
+    volumes:
+      - .:/posts/
+  db:
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    # Environment settings have to be the same for the yml file than for the used .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fast_posts
+    volumes:
+        - ./compose/db:/docker-entrypoint-initdb.d/
+    restart: always
