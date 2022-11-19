@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Depends, status
 
 from src.settings.db import Session
 
@@ -11,6 +11,7 @@ from src.tasks import UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSession
 
 
 app = FastAPI()
+
 
 @app.post('/tasks/',
           response_model=ReturnTaskSchema,
@@ -35,16 +36,26 @@ def create_task(task: CreateTaskSchema):
          response_model=ReturnTaskSchema,
          status_code=status.HTTP_200_OK,
          tags=["tasks"])
-def task_detail():
-    return "Task"
+def task_detail(task_id: int):
+    """ Returns information of a requested task"""
+    with Session() as session:
+        task = session.query(Task).filter(Task.id == task_id).first()
+        return task
 
 
 @app.get('/tasks/',
          status_code=status.HTTP_200_OK,
          tags=["tasks"])
 def list_tasks():
-    return "Tasks"
+    """ List tasks: Returns a list of all the tasks in the database."""
+    with Session() as session:
+        db_tasks = session.query(Task).all()
+        tasks = []
 
+        for task in db_tasks:
+            tasks.append(ReturnTaskSchema(id=task.id, name=task.name))
+
+        return tasks
 
 @app.post('/tasks/start/{task_id}/',
           status_code=status.HTTP_201_CREATED,
