@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
+from pydantic.schema import Optional
 
 
 class TaskMixin(BaseModel):
@@ -23,16 +24,20 @@ class SessionRecordMixin(BaseModel):
 
 
 class CreateSessionRecordSchema(SessionRecordMixin):
+    """Attr: starting_time and task_pk"""
     pass
 
 
+class UpdateSessionRecordSchema(BaseModel):
+    """This model is ment to be used when a session ends, so that the finishing_time value of the record is set.
+    Attr: finishing_time"""
+    finishing_time: datetime = Field(...)
+
+
 class ReturnSessionRecordSchema(SessionRecordMixin):
+    """ Attr: starting_time, finishing_time, id and task_pk."""
     id: int
+    finishing_time: Optional[datetime]
 
     class Config:
         orm_mode = True
-
-
-class UpdateSessionRecordSchema(BaseModel):
-    """This model is ment to be used when a session ends, so that the finishing_time value of the record is set."""
-    finishing_time: datetime = Field()

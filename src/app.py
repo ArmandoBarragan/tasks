@@ -1,3 +1,6 @@
+""" This file contains all the endpoints of the app. For a bigger project I would use, for example, one file
+for the tasks endpoints, one for the timer, one for auth, etc."""
+
 from fastapi import FastAPI, Depends, status
 
 from src.settings.db import Session
@@ -11,7 +14,6 @@ from src.tasks import UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSession
 
 
 app = FastAPI()
-
 
 @app.post('/tasks/',
           response_model=ReturnTaskSchema,
@@ -58,10 +60,22 @@ def list_tasks():
         return tasks
 
 @app.post('/tasks/start/{task_id}/',
+          response_model=ReturnSessionRecordSchema,
           status_code=status.HTTP_201_CREATED,
           tags=["timer"])
-def start_timer():
-    return "Time started"
+def start_timer(session_record: CreateSessionRecordSchema):
+    """ Creates a Session Record for the database with the upload time from the client as the starting time."""
+    with Session() as session:
+        db_session_record = SessionRecord(
+            starting_time=session_record.starting_time,
+            task_pk=session_record.task_pk
+        )
+
+        session.add(db_session_record)
+        session.commit()
+        session.refresh(db_session_record)
+
+        return db_session_record
 
 
 @app.post('tasks/stop/{task_id}',
@@ -69,3 +83,5 @@ def start_timer():
           tags=["timer"])
 def stop_timer():
     return "Time stopped"
+
+
