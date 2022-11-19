@@ -1,2 +1,2 @@
 from .models import SessionRecord, Task
-from .schemas import CreateTask, CreateSessionRecord, UpdateSessionRecord, ReturnTask, ReturnSessionRecord
+from .schemas import CreateTaskSchema, CreateSessionRecordSchema, UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSessionRecordSchema

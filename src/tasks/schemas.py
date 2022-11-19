@@ -6,11 +6,11 @@ class TaskMixin(BaseModel):
     name: str = Field(..., min_length=2, max_length=50)
 
 
-class CreateTask(TaskMixin):
+class CreateTaskSchema(TaskMixin):
     pass
 
 
-class  ReturnTask(TaskMixin):
+class  ReturnTaskSchema(TaskMixin):
     id: int
 
     class Config:
@@ -22,17 +22,17 @@ class SessionRecordMixin(BaseModel):
     task_pk: int = Field(...)
 
 
-class CreateSessionRecord(SessionRecordMixin):
+class CreateSessionRecordSchema(SessionRecordMixin):
     pass
 
 
-class ReturnSessionRecord(SessionRecordMixin):
+class ReturnSessionRecordSchema(SessionRecordMixin):
     id: int
 
     class Config:
         orm_mode = True
 
 
-class UpdateSessionRecord(BaseModel):
+class UpdateSessionRecordSchema(BaseModel):
     """This model is ment to be used when a session ends, so that the finishing_time value of the record is set."""
     finishing_time: datetime = Field()
