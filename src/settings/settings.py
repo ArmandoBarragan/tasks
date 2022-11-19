@@ -17,5 +17,5 @@ DATABASE = {
     'PORT': os.getenv('DB_PORT', default=5432),
     'PASSWORD': os.getenv('DB_PASSWORD', default='postgres'),
     'USER': os.getenv('DB_USER', default='postgres'),
-    'NAME': os.getenv('DB_NAME', default='fast_posts')
+    'NAME': os.getenv('DB_NAME', default='tasks')
 }
