@@ -1,6 +1,6 @@
 """ This file contains all the endpoints of the app. For a bigger project I would use, for example, one file
 for the tasks endpoints, one for the timer, one for auth, etc."""
-
+from datetime import datetime
 from fastapi import FastAPI, Depends, status
 
 from src.settings.db import Session
@@ -59,7 +59,7 @@ def list_tasks():
 
         return tasks
 
-@app.post('/tasks/start/{task_id}/',
+@app.post('/timer/start/{task_id}/',
           response_model=ReturnSessionRecordSchema,
           status_code=status.HTTP_201_CREATED,
           tags=["timer"])
@@ -78,10 +78,23 @@ def start_timer(session_record: CreateSessionRecordSchema):
         return db_session_record
 
 
-@app.post('tasks/stop/{task_id}',
+@app.post('/timer/stop/{task_id}',
           status_code=status.HTTP_200_OK,
-          tags=["timer"])
-def stop_timer():
-    return "Time stopped"
+          tags=["timer"],
+          response_model=ReturnSessionRecordSchema)
+def stop_timer(task_id: int, update: UpdateSessionRecordSchema):
+    """ Sets the session record's finishing_time to the moment the user is done."""
+    with Session() as session:
+        db_session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id)\
+            .order_by(SessionRecord.id.desc()).first()
 
+        db_session_record.finishing_time = update.finishing_time
+        session_record = ReturnSessionRecordSchema(
+            id=db_session_record.id,
+            task_pk=db_session_record.task_pk,
+            starting_time=db_session_record.starting_time,
+            finishing_time=db_session_record.finishing_time
+        )
 
+        session.commit()
+        return session_record
