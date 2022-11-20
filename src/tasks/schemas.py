@@ -13,6 +13,7 @@ class CreateTaskSchema(TaskMixin):
 
 class  ReturnTaskSchema(TaskMixin):
     id: int
+    time_worked: str
 
     class Config:
         orm_mode = True

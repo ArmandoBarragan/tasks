@@ -1,6 +1,6 @@
 """ This file contains all the endpoints of the app. For a bigger project I would use, for example, one file
 for the tasks endpoints, one for the timer, one for auth, etc."""
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Fastapi
 from fastapi import FastAPI, status, HTTPException
@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 # Project
 from src.settings.db import Session
+from src.utils import format_time
 from src.tasks import Task, SessionRecord
 from src.tasks import CreateTaskSchema, CreateSessionRecordSchema
 from src.tasks import UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSessionRecordSchema
@@ -42,7 +43,15 @@ def task_detail(task_id: int):
     """ Returns information of a requested task"""
     with Session() as session:
         task = session.query(Task).filter(Task.id == task_id).first()
-        return task
+        session_records = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id).all()
+
+        time_worked = 0
+        for record in session_records:
+            time_worked += (record.finishing_time - record.starting_time).total_seconds()
+
+        returnable_task = task
+        returnable_task.time_worked = format_time(time_worked)
+        return returnable_task
 
 
 @app.get('/tasks/',
@@ -109,6 +118,7 @@ def stop_timer(task_id: int, update: UpdateSessionRecordSchema):
          tags=['timer'])
 def get_current_time(task_id: int):
     """ Returns the time the user has had the current session active."""
+    import math
     with Session() as session:
         session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id) \
             .order_by(SessionRecord.id.desc()).first()
@@ -117,4 +127,5 @@ def get_current_time(task_id: int):
             return JSONResponse(status_code=status.HTTP_204_NO_CONTENT,
                                 content="No task is being worked on.")
 
-        return datetime.now() - session_record.starting_time
+        time = (datetime.now() - session_record.starting_time).total_seconds()
+        return format_time(time)

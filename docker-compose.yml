@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/posts/
+      - .:/app/
   db:
     image: postgres:latest
     ports:
@@ -21,7 +21,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=fast_posts
+      - POSTGRES_DB=tasks
     volumes:
-        - ./compose/:/docker-entrypoint-initdb.d/
+        - ./compose/db/:/docker-entrypoint-initdb.d/
     restart: always

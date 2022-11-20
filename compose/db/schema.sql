@@ -1,18 +1,18 @@
 \c tasks
 
-CREATE TABLE projects (
+CREATE TABLE tasks(
     id SERIAL,
-    name VARCHAR (50),
+    name VARCHAR(50),
 
-    CONSTRAINT project_pk PRIMARY KEY (id)
+    CONSTRAINT tasks_pk PRIMARY KEY (id)
 );
 
-CREATE TABLE tasks (
-    id SERIAL,
-    name VARCHAR (50),
-    project_pk INT,
 
-    CONSTRAINT task_pk PRIMARY KEY (id),
-    CONSTRAINT project_fk FOREIGN KEY (project_pk)
-        REFERENCES projects (id) ON DELETE SET NULL
+CREATE TABLE session_records (
+    id SERIAL PRIMARY KEY,
+    starting_time TIMESTAMP NOT NULL,
+    finishing_time TIMESTAMP NULL,
+    task_pk INT,
+
+    CONSTRAINT task_fk FOREIGN KEY (task_pk) REFERENCES tasks(id) ON DELETE CASCADE
 );
