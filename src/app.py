@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 # Project
 from src.settings.db import Session
-from src.utils import format_time
+from src.utils import format_time, get_last_record
 from src.tasks import Task, SessionRecord
 from src.tasks import CreateTaskSchema, CreateSessionRecordSchema
 from src.tasks import UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSessionRecordSchema
@@ -72,12 +72,18 @@ def list_tasks():
           response_model=ReturnSessionRecordSchema,
           status_code=status.HTTP_201_CREATED,
           tags=["timer"])
-def start_timer(session_record: CreateSessionRecordSchema):
+def start_timer(task_id:int, session_record: CreateSessionRecordSchema):
     """ Creates a Session Record for the database with the upload time from the client as the starting time."""
     with Session() as session:
+        last_session = get_last_record(session, task_id)
+
+        if last_session.finishing_time is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Timer already started")
+
         db_session_record = SessionRecord(
             starting_time=session_record.starting_time,
-            task_pk=session_record.task_pk
+            task_pk=task_id
         )
 
         session.add(db_session_record)
@@ -94,8 +100,7 @@ def start_timer(session_record: CreateSessionRecordSchema):
 def stop_timer(task_id: int, update: UpdateSessionRecordSchema):
     """ Sets the session record's finishing_time to the moment the user is done."""
     with Session() as session:
-        session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id)\
-            .order_by(SessionRecord.id.desc()).first()
+        session_record = get_last_record(session, task_id)
 
         if session_record.finishing_time is not None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -120,8 +125,7 @@ def get_current_time(task_id: int):
     """ Returns the time the user has had the current session active."""
     import math
     with Session() as session:
-        session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id) \
-            .order_by(SessionRecord.id.desc()).first()
+        session_record = get_last_record(session, task_id)
 
         if session_record.finishing_time is not None:
             return JSONResponse(status_code=status.HTTP_204_NO_CONTENT,

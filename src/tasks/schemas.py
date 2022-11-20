@@ -21,7 +21,6 @@ class  ReturnTaskSchema(TaskMixin):
 
 class SessionRecordMixin(BaseModel):
     starting_time: datetime = Field(...)
-    task_pk: int = Field(...)
 
 
 class CreateSessionRecordSchema(SessionRecordMixin):
