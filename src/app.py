@@ -1,14 +1,14 @@
 """ This file contains all the endpoints of the app. For a bigger project I would use, for example, one file
 for the tasks endpoints, one for the timer, one for auth, etc."""
 from datetime import datetime
-from fastapi import FastAPI, Depends, status
 
+# Fastapi
+from fastapi import FastAPI, status, HTTPException
+from fastapi.responses import JSONResponse
+
+# Project
 from src.settings.db import Session
-
-# Models
 from src.tasks import Task, SessionRecord
-
-# Schemas
 from src.tasks import CreateTaskSchema, CreateSessionRecordSchema
 from src.tasks import UpdateSessionRecordSchema, ReturnTaskSchema, ReturnSessionRecordSchema
 
@@ -85,16 +85,36 @@ def start_timer(session_record: CreateSessionRecordSchema):
 def stop_timer(task_id: int, update: UpdateSessionRecordSchema):
     """ Sets the session record's finishing_time to the moment the user is done."""
     with Session() as session:
-        db_session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id)\
+        session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id)\
             .order_by(SessionRecord.id.desc()).first()
 
-        db_session_record.finishing_time = update.finishing_time
-        session_record = ReturnSessionRecordSchema(
-            id=db_session_record.id,
-            task_pk=db_session_record.task_pk,
-            starting_time=db_session_record.starting_time,
-            finishing_time=db_session_record.finishing_time
+        if session_record.finishing_time is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="There's no session to stop")
+
+        session_record.finishing_time = update.finishing_time
+        returnable_session_record = ReturnSessionRecordSchema(
+            id=session_record.id,
+            task_pk=session_record.task_pk,
+            starting_time=session_record.starting_time,
+            finishing_time=session_record.finishing_time
         )
 
         session.commit()
-        return session_record
+        return returnable_session_record
+
+
+@app.get('/timer/{task_id}',
+         status_code=status.HTTP_200_OK,
+         tags=['timer'])
+def get_current_time(task_id: int):
+    """ Returns the time the user has had the current session active."""
+    with Session() as session:
+        session_record = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id) \
+            .order_by(SessionRecord.id.desc()).first()
+
+        if session_record.finishing_time is not None:
+            return JSONResponse(status_code=status.HTTP_204_NO_CONTENT,
+                                content="No task is being worked on.")
+
+        return datetime.now() - session_record.starting_time
