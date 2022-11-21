@@ -11,6 +11,10 @@ class CreateTaskSchema(TaskMixin):
     pass
 
 
+class UpdateTaskSchema(TaskMixin):
+    pass
+
+
 class  ReturnTaskSchema(TaskMixin):
     """Attributes are id, name, project_pk and time_worked"""
     id: int
@@ -18,3 +22,5 @@ class  ReturnTaskSchema(TaskMixin):
 
     class Config:
         orm_mode = True
+
+

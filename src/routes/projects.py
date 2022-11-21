@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 
-from src.schemas.projects import CreateProjectSchema, ReturnProjectSchema
-from src.schemas.tasks import ReturnTaskSchema
+from src.schemas.projects import CreateProjectSchema, ReturnProjectSchema, UpdateProjectSchema
 from src.settings.db import Session
-from src.models import Project, Task
+from src.models import Project
 from src.utils import get_project_tasks
 
 router = APIRouter()
@@ -60,4 +60,31 @@ def project_detail(project_id: int):
         )
 
         return returnable_project
+
+
+@router.patch('/projects/{project_id}',
+              status_code=status.HTTP_200_OK,
+              tags=['projects'])
+def update_project(project_id: int, project: UpdateProjectSchema):
+    with Session() as session:
+        session.query(Project).filter(Project.id == project_id)\
+            .update(jsonable_encoder(project))
+        session.commit()
+
+        returnable_project = ReturnProjectSchema(
+            name=project.name,
+            id=project_id,
+            tasks=get_project_tasks(session, project_id)
+        )
+
+        return returnable_project
+
+
+@router.delete('/projects/{project_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               tags=['projects'])
+def delete_project(project_id: int):
+    with Session() as session:
+        session.query(Project).filter(Project.id == project_id).delete()
+        session.commit()
 

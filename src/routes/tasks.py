@@ -1,9 +1,10 @@
 from fastapi import APIRouter, status, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from src.settings.db import Session
-from src.models import Task, SessionRecord
-from src.schemas.tasks import CreateTaskSchema, ReturnTaskSchema
-from src.utils import format_time, get_time_worked
+from src.schemas.tasks import CreateTaskSchema, ReturnTaskSchema, UpdateTaskSchema
+from src.utils import get_time_worked
+from src.models import Task
 
 router = APIRouter()
 
@@ -71,3 +72,31 @@ def list_tasks():
             ))
 
         return tasks
+
+
+@router.patch('/tasks/{task_id}',
+              response_model=ReturnTaskSchema,
+              status_code=status.HTTP_200_OK,
+              tags=["tasks"])
+def update_task(task_id: int, task: UpdateTaskSchema):
+    with Session() as session:
+        db_task = task
+
+        if db_task.project_pk == 0: db_task.project_pk = None
+
+        session.query(Task).filter(Task.id == task_id).update(jsonable_encoder(db_task))
+        session.commit()
+
+        returnable_task = session.query(Task).filter(Task.id == task_id).first()
+        returnable_task.time_worked = get_time_worked(session, task_id)
+
+        return returnable_task
+
+
+@router.delete('/tasks/{task_id}',
+               status_code=status.HTTP_204_NO_CONTENT,
+               tags=['tasks'])
+def delete_task(task_id: int):
+    with Session() as session:
+        session.query(Task).filter(Task.id == task_id).delete()
+        session.commit()

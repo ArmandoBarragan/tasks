@@ -8,9 +8,11 @@ class ProjectMixin(BaseModel):
 
 
 class CreateProjectSchema(ProjectMixin):
-    class Config:
-        orm_mode = True
+    pass
 
+
+class UpdateProjectSchema(ProjectMixin):
+    pass
 
 class ReturnProjectSchema(ProjectMixin):
     """ This can be instantiated from the database showing only the name,
