@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, HTTPException
 from src.settings.db import Session
 from src.utils import get_last_record, format_time
 from src.models import SessionRecord
-from src.schemas import ReturnSessionRecordSchema, CreateSessionRecordSchema, UpdateSessionRecordSchema
+from src.schemas.timer import ReturnSessionRecordSchema, CreateSessionRecordSchema, UpdateSessionRecordSchema
 
 
 router = APIRouter()

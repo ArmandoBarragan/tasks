@@ -3,22 +3,6 @@ from pydantic import BaseModel, Field
 from pydantic.schema import Optional
 
 
-class TaskMixin(BaseModel):
-    name: str = Field(..., min_length=2, max_length=50)
-
-
-class CreateTaskSchema(TaskMixin):
-    pass
-
-
-class  ReturnTaskSchema(TaskMixin):
-    id: int
-    time_worked: str
-
-    class Config:
-        orm_mode = True
-
-
 class SessionRecordMixin(BaseModel):
     starting_time: datetime = Field(...)
 

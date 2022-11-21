@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 
 from src.settings.db import Session
 from src.models import Task, SessionRecord
-from src.schemas import CreateTaskSchema, ReturnTaskSchema
+from src.schemas.tasks import CreateTaskSchema, ReturnTaskSchema
 from src.utils import format_time
 
 router = APIRouter()
