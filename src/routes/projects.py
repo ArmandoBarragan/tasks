@@ -11,7 +11,8 @@ router = APIRouter()
 
 @router.post('/projects/',
              tags=['projects'],
-             response_model=ReturnProjectSchema)
+             response_model=ReturnProjectSchema,
+            status_code=201)
 def create_project(project: CreateProjectSchema):
     with Session() as session:
         db_project = Project(name=project.name)
@@ -24,7 +25,8 @@ def create_project(project: CreateProjectSchema):
 
 
 @router.get('/projects/',
-            tags=['projects'])
+            tags=['projects'],
+            status_code=200)
 def list_projects():
     with Session() as session:
         returnable_projects = []
@@ -41,7 +43,8 @@ def list_projects():
 
 @router.get('/projects/{project_id}',
             tags=['projects'],
-            response_model=ReturnProjectSchema)
+            response_model=ReturnProjectSchema,
+            status_code=200)
 def project_detail(project_id: int):
     with Session() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
