@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, HTTPException
 from src.settings.db import Session
 from src.models import Task, SessionRecord
 from src.schemas.tasks import CreateTaskSchema, ReturnTaskSchema
-from src.utils import format_time
+from src.utils import format_time, get_time_worked
 
 router = APIRouter()
 
@@ -14,8 +14,8 @@ router = APIRouter()
           tags=["tasks"])
 def create_task(task: CreateTaskSchema):
     """
-    Create task: I would normally create a base CRUD class and the Task class would inherit from it,
-    but it's only one model. This method creates an instance of a task and stores it in the database.
+    Create task: I would normally create a base CRUD class and a CRUDTask class would inherit from it,
+    but it's a small project. This method creates an instance of a task and stores it in the database.
     :param task:
     :return:
     """
@@ -24,7 +24,11 @@ def create_task(task: CreateTaskSchema):
         session.add(db_task)
         session.commit()
         session.refresh(db_task)
-        return db_task
+
+        return_task = db_task
+        return_task.time_worked = 0
+
+        return return_task
 
 
 @router.get('/tasks/{task_id}',
@@ -40,14 +44,10 @@ def task_detail(task_id: int):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail='This task does not exist.')
 
-        session_records = session.query(SessionRecord).filter(SessionRecord.task_pk == task_id).all()
-
-        time_worked = 0
-        for record in session_records:
-            time_worked += (record.finishing_time - record.starting_time).total_seconds()
-
         returnable_task = task
+        time_worked = get_time_worked(session, task_id)
         returnable_task.time_worked = format_time(time_worked)
+
         return returnable_task
 
 
@@ -61,6 +61,10 @@ def list_tasks():
         tasks = []
 
         for task in db_tasks:
-            tasks.append(ReturnTaskSchema(id=task.id, name=task.name))
+            tasks.append(ReturnTaskSchema(
+                id=task.id,
+                name=task.name,
+                time_worked=format_time(get_time_worked(session, task.id))
+            ))
 
         return tasks

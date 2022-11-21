@@ -13,7 +13,7 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    project = Column(ForeignKey("projects.id"))
+    project_pk = Column(ForeignKey("projects.id"))
 
 
 class SessionRecord(Base):

@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, HTTPException
 
 from src.settings.db import Session
 from src.utils import get_last_record, format_time
-from src.models import SessionRecord
+from src.models import SessionRecord, Task
 from src.schemas.timer import ReturnSessionRecordSchema, CreateSessionRecordSchema, UpdateSessionRecordSchema
 
 
@@ -18,8 +18,13 @@ def start_timer(task_id:int, session_record: CreateSessionRecordSchema):
     """ Creates a Session Record for the database with the upload time from the client as the starting time."""
     with Session() as session:
         last_session = get_last_record(session, task_id)
+        task = session.query(Task).filter(Task.id == task_id).first()
 
-        if last_session.finishing_time is not None:
+        if task is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Task does not exist.")
+
+        if last_session is not None and last_session.finishing_time is not None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="Timer already started")
 

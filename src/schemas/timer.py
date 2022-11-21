@@ -7,6 +7,7 @@ class SessionRecordMixin(BaseModel):
     starting_time: datetime = Field(...)
 
 
+
 class CreateSessionRecordSchema(SessionRecordMixin):
     """Attr: starting_time and task_pk"""
     pass
@@ -21,6 +22,7 @@ class UpdateSessionRecordSchema(BaseModel):
 class ReturnSessionRecordSchema(SessionRecordMixin):
     """ Attr: starting_time, finishing_time, id and task_pk."""
     id: int
+    task_pk: int
     finishing_time: Optional[datetime]
 
     class Config:
