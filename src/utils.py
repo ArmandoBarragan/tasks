@@ -1,6 +1,5 @@
 import math
-from sqlalchemy.orm import Session
-from src.tasks.models import SessionRecord
+from src.models import SessionRecord
 
 def format_time(time):
     return "{hours}:{minutes}:{seconds}".format(
