@@ -7,6 +7,7 @@ CREATE TABLE projects(
     CONSTRAINT projects_pk PRIMARY KEY (id)
 );
 
+
 CREATE TABLE tasks(
     id SERIAL,
     name VARCHAR(50),
