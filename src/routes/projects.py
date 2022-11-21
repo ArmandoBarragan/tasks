@@ -1,10 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from src.schemas.projects import CreateProjectSchema, ReturnProjectSchema
 from src.schemas.tasks import ReturnTaskSchema
 from src.settings.db import Session
 from src.models import Project, Task
-from src.utils import get_time_worked
+from src.utils import get_project_tasks
 
 router = APIRouter()
 
@@ -30,25 +30,31 @@ def list_projects():
         returnable_projects = []
 
         for project in session.query(Project).all():
-            tasks = []
-
-            for task in session.query(Task).filter(Task.project_pk == project.id):
-                tasks.append(ReturnTaskSchema(
-                    id=task.id,
-                    name=task.name,
-                    project_pk=task.project_pk,
-                    time_worked=get_time_worked(session, task.id)
-                ))
-
             returnable_projects.append(ReturnProjectSchema(
                 name=project.name,
                 id=project.id,
-                tasks=tasks
+                tasks=get_project_tasks(session, project.id)
             ))
 
-@router.get('/projects/{project_id}',
-            tags=['projects'])
-def project_detail(project_id: int):
-    pass
+        return returnable_projects
 
+
+@router.get('/projects/{project_id}',
+            tags=['projects'],
+            response_model=ReturnProjectSchema)
+def project_detail(project_id: int):
+    with Session() as session:
+        project = session.query(Project).filter(Project.id == project_id).first()
+
+        if project is None:
+            return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                 detail="This project does not exist.")
+
+        returnable_project = ReturnProjectSchema(
+            id=project.id,
+            name=project.name,
+            tasks=get_project_tasks(session, project.id)
+        )
+
+        return returnable_project
 

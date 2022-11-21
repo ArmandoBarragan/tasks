@@ -20,7 +20,11 @@ def create_task(task: CreateTaskSchema):
     :return:
     """
     with Session() as session:
-        db_task = Task(name=task.name)
+        returnable_task = task
+
+        if returnable_task.project_pk == 0: returnable_task.project_pk = None
+        db_task = Task(name=returnable_task.name, project_pk=returnable_task.project_pk)
+
         session.add(db_task)
         session.commit()
         session.refresh(db_task)
@@ -45,8 +49,7 @@ def task_detail(task_id: int):
                                 detail='This task does not exist.')
 
         returnable_task = task
-        time_worked = get_time_worked(session, task_id)
-        returnable_task.time_worked = format_time(time_worked)
+        returnable_task.time_worked = get_time_worked(session, task_id)
 
         return returnable_task
 
