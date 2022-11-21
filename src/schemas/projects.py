@@ -4,11 +4,12 @@ from src.schemas.tasks import ReturnTaskSchema
 
 
 class ProjectMixin(BaseModel):
-    name: str = Field(...)
+    name: str = Field(...,  min_length=2, max_length=50)
 
 
 class CreateProjectSchema(ProjectMixin):
-    pass
+    class Config:
+        orm_mode = True
 
 
 class ReturnProjectSchema(ProjectMixin):

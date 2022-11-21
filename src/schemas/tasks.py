@@ -12,6 +12,7 @@ class CreateTaskSchema(TaskMixin):
 
 
 class  ReturnTaskSchema(TaskMixin):
+    """Attributes are id, name, project_pk and time_worked"""
     id: int
     time_worked: str
 

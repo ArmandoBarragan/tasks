@@ -64,7 +64,7 @@ def list_tasks():
             tasks.append(ReturnTaskSchema(
                 id=task.id,
                 name=task.name,
-                time_worked=format_time(get_time_worked(session, task.id))
+                time_worked=get_time_worked(session, task.id)
             ))
 
         return tasks
